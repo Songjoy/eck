@@ -7,3 +7,56 @@ spec:
   count: 1
   elasticsearchRef:
     name: hot-warm-elasticsearch
+
+--
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  labels:
+      elasticsearch.k8s.elastic.co/node-role: kibana
+  name: hot-warm-kibana
+  namespace: swj2
+  ownerReferences:
+    - apiVersion: elasticsearch.k8s.elastic.co/v1
+      kind: Elasticsearch
+      name: hot-warm-elasticsearch
+      uid: 254ed0ec-fd03-4c69-b7f9-b60c27be343a
+spec:
+  config:
+    data: null
+  count: 1
+  elasticsearchRef:
+    name: hot-warm-elasticsearch
+  http:
+    service:
+      metadata: {}
+      spec:
+        ports:
+          - name: kibana
+            port: 5601
+            protocol: TCP
+            targetPort: 5601
+        type: NodePort
+    tls:
+      certificate: {}
+  image: 172.30.120.59/elastic.m.daocloud.io/kibana/kibana:7.16.3
+  monitoring:
+    logs: {}
+    metrics: {}
+  podTemplate:
+    metadata:
+      creationTimestamp: null
+      labels:
+        foo: bar
+    spec:
+      containers:
+        - name: kibana
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+  version: 7.16.3
+

@@ -107,3 +107,427 @@ spec:
             storage: 100Gi
         storageClassName: alicloud-disk-efficiency  #挂载高效云盘
 
+--
+
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: hot-warm-elasticsearch
+  namespace: swj2
+spec:
+  auth: {}
+  #禁用 https
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  image: 172.30.120.59/elastic.m.daocloud.io/elasticsearch/elasticsearch:7.16.3
+  monitoring:
+    logs: {}
+    metrics: {}
+  nodeSets:
+    - config:
+        node.attr.data: hot # 节点属性
+        node.roles:
+          - data_hot
+          - data_content
+      count: 3
+      name: data-hot
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: data_hot
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '2'
+                  memory: 2Gi
+                requests:
+                  cpu: '2'
+                  memory: 2Gi
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 2Gi
+            storageClassName: hwameistor-storage-lvm-hdd
+          status: {}
+    - config:
+        node.attr.data: warm # 节点属性
+        node.roles:
+          - data_warm
+          - data_content
+      count: 3
+      name: data-warm
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: data_hot
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '1'
+                  memory: 1Gi
+                requests:
+                  cpu: '1'
+                  memory: 1Gi
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+            storageClassName: hwameistor-storage-lvm-hdd
+          status: {}
+    - config:
+        node.attr.data: cold # 节点属性
+        node.roles:
+          - data_cold
+          - data_content
+      count: 3
+      name: data-cold
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: data_cold
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '1'
+                  memory: 1Gi
+                requests:
+                  cpu: '1'
+                  memory: 1Gi
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+            storageClassName: hwameistor-storage-lvm-hdd
+          status: {}
+    - config:
+        node.roles:
+          - master
+      count: 3
+      name: master
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: master
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '1'
+                  memory: 1Gi
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+            storageClassName: hwameistor-storage-lvm-hdd
+          status: {}
+  transport:
+    service:
+      metadata: {}
+      spec: {}
+    tls:
+      certificate: {}
+  updateStrategy:
+    changeBudget: {}
+  version: 7.16.3
+
+
+--
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: hot-warm-elasticsearch
+  namespace: swj2
+spec:
+  auth: {}
+  #禁用 https
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  image: 172.30.120.59/elastic.m.daocloud.io/elasticsearch/elasticsearch:7.16.3
+  monitoring:
+    logs: {}
+    metrics: {}
+  nodeSets:
+    - config:
+        node.attr.data: hot # 节点属性
+        node.roles:
+          - data_hot
+          - data_content
+      count: 3
+      name: data-hot
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: data_hot
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '2'
+                  memory: 2Gi
+                requests:
+                  cpu: '2'
+                  memory: 2Gi
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 2Gi
+            storageClassName: hwameistor-storage-lvm-hdd
+          status: {}
+    - config:
+        node.attr.data: cold # 节点属性
+        node.roles:
+          - data_cold
+          - data_content
+      count: 3
+      name: data-cold
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: data_cold
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '1'
+                  memory: 2Gi
+                requests:
+                  cpu: '1'
+                  memory: 2Gi
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 2Gi
+            storageClassName: hwameistor-storage-lvm-hdd
+          status: {}
+    - config:
+        node.roles:
+          - master
+      count: 3
+      name: master
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: master
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '1'
+                  memory: 1Gi
+                requests:
+                  cpu: '1'
+                  memory: 1Gi
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+            storageClassName: hwameistor-storage-lvm-hdd
+          status: {}
+  transport:
+    service:
+      metadata: {}
+      spec: {}
+    tls:
+      certificate: {}
+  updateStrategy:
+    changeBudget: {}
+  version: 7.16.3

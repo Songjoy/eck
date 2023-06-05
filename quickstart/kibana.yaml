@@ -7,3 +7,59 @@ spec:
   count: 1
   elasticsearchRef:
     name: my-elasticsearch
+--
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  annotations:
+    association.k8s.elastic.co/es-conf: '{"authSecretName":"es001-kibana-user","authSecretKey":"es-test-es001-kibana-user","isServiceAccount":false,"caCertProvided":true,"caSecretName":"es001-kb-es-ca","url":"https://es001-es-http.es-test.svc:9200","version":"7.16.3"}'
+    input: '{"cluster":"mcamel-test","namespace":"es-test","name":"es001","describe":"ES
+      集群测试（勿删）","version":"7.16.3","service_type":1,"ports":[{}],"node_sets":[{"node_type":1,"replicas":3,"cpu_request":"0.5","cpu_limit":"1","memory_request":"1GB","memory_limit":"1GB","storage_class_name":"hwameistor-storage-lvm-hdd","storage_capacity":"1GB"},{"node_type":2,"replicas":1,"cpu_request":"0.1","cpu_limit":"1","memory_request":"0.1GB","memory_limit":"1GB"},{"node_type":3,"replicas":3,"cpu_request":"0.1","cpu_limit":"1","memory_request":"0.1GB","memory_limit":"1GB","storage_class_name":"hwameistor-storage-lvm-hdd","storage_capacity":"1GB"}],"elasticsearch_password":"Es123456","kibanaPorts":[{}],"kibana_service_type":1}'
+    shadow.clusterpedia.io/cluster-name: mcamel-test
+  labels:
+    elasticsearch.k8s.elastic.co/node-role: kibana
+  name: es001
+  namespace: es-test
+  ownerReferences:
+  - apiVersion: elasticsearch.k8s.elastic.co/v1
+    kind: Elasticsearch
+    name: es001
+spec:
+  config:
+    data: null
+  count: 1
+  elasticsearchRef:
+    name: es001
+  enterpriseSearchRef: {}
+  http:
+    service:
+      metadata: {}
+      spec:
+        ports:
+        - name: kibana
+          port: 5601
+          protocol: TCP
+          targetPort: 5601
+        type: NodePort
+    tls:
+      certificate: {}
+  image: elastic.m.daocloud.io/kibana/kibana:7.16.3
+  monitoring:
+    logs: {}
+    metrics: {}
+  podTemplate:
+    metadata:
+      creationTimestamp: null
+      labels:
+        foo: bar
+    spec:
+      containers:
+      - name: kibana
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 107374182400m
+  version: 7.16.3

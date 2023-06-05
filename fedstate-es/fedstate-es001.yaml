@@ -1,0 +1,239 @@
+# 集群1
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: mes01
+  namespace: es-test
+spec:
+  auth: {}
+  http:
+    service:
+      metadata: {}
+      spec:
+        ports:
+        - name: https
+          nodePort: 30002
+          port: 9200
+          protocol: TCP
+          targetPort: 9200
+        type: NodePort
+    tls:
+      certificate: {}
+  image: elastic.m.daocloud.io/elasticsearch/elasticsearch:7.16.3
+  monitoring:
+    logs: {}
+    metrics: {}
+  nodeSets:
+  - config:
+      node.roles:
+      - data
+      - ingest
+      - ml
+      discovery.seed_hosts:
+      - 10.29.16.22:30006
+      - 10.29.16.22:30002
+    count: 2
+    name: data
+    podTemplate:
+      metadata:
+        creationTimestamp: null
+        labels:
+          elasticsearch.k8s.elastic.co/node-role: data
+      spec:
+        containers:
+        - command:
+          - /bin/sh
+          - -cxe
+          - ulimit -HSn 65535 && /bin/tini -- /usr/local/bin/docker-entrypoint.sh
+            eswrapper
+          name: elasticsearch
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            capabilities:
+              add:
+              - SYS_RESOURCE
+        initContainers:
+        - command:
+          - sh
+          - -c
+          - sysctl -w vm.max_map_count=262144
+          name: sysctl
+          resources: {}
+          securityContext:
+            privileged: true
+            runAsUser: 0
+  - config:
+      node.roles:
+      - master
+    count: 1
+    name: master
+    podTemplate:
+      metadata:
+        creationTimestamp: null
+        labels:
+          elasticsearch.k8s.elastic.co/node-role: master
+      spec:
+        containers:
+        - command:
+          - /bin/sh
+          - -cxe
+          - ulimit -HSn 65535 && /bin/tini -- /usr/local/bin/docker-entrypoint.sh
+            eswrapper
+          name: elasticsearch
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 107374182400m
+          securityContext:
+            capabilities:
+              add:
+              - SYS_RESOURCE
+        initContainers:
+        - command:
+          - sh
+          - -c
+          - sysctl -w vm.max_map_count=262144
+          name: sysctl
+          resources: {}
+          securityContext:
+            privileged: true
+            runAsUser: 0
+  transport:
+    service:
+      metadata: {}
+      spec: {}
+    tls:
+      certificate: {}
+  updateStrategy:
+    changeBudget: {}
+  version: 7.16.3
+
+-- 
+# 集群2
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: mes01
+  namespace: es-test
+spec:
+  auth: {}
+  http:
+    service:
+      metadata: {}
+      spec:
+        ports:
+        - name: https
+          nodePort: 30006
+          port: 9200
+          protocol: TCP
+          targetPort: 9200
+        type: NodePort
+    tls:
+      certificate: {}
+  image: elastic.m.daocloud.io/elasticsearch/elasticsearch:7.16.3
+  monitoring:
+    logs: {}
+    metrics: {}
+  nodeSets:
+  - config:
+      node.roles:
+      - data
+      - ingest
+      - ml
+      discovery.seed_hosts:
+      - 10.29.16.22:30006
+      - 10.29.16.22:30002
+    count: 1
+    name: data
+    podTemplate:
+      metadata:
+        creationTimestamp: null
+        labels:
+          elasticsearch.k8s.elastic.co/node-role: data
+      spec:
+        containers:
+        - command:
+          - /bin/sh
+          - -cxe
+          - ulimit -HSn 65535 && /bin/tini -- /usr/local/bin/docker-entrypoint.sh
+            eswrapper
+          name: elasticsearch
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            capabilities:
+              add:
+              - SYS_RESOURCE
+        initContainers:
+        - command:
+          - sh
+          - -c
+          - sysctl -w vm.max_map_count=262144
+          name: sysctl
+          resources: {}
+          securityContext:
+            privileged: true
+            runAsUser: 0
+  - config:
+      node.roles:
+      - master
+    count: 2
+    name: master
+    podTemplate:
+      metadata:
+        creationTimestamp: null
+        labels:
+          elasticsearch.k8s.elastic.co/node-role: master
+      spec:
+        containers:
+        - command:
+          - /bin/sh
+          - -cxe
+          - ulimit -HSn 65535 && /bin/tini -- /usr/local/bin/docker-entrypoint.sh
+            eswrapper
+          name: elasticsearch
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 107374182400m
+          securityContext:
+            capabilities:
+              add:
+              - SYS_RESOURCE
+        initContainers:
+        - command:
+          - sh
+          - -c
+          - sysctl -w vm.max_map_count=262144
+          name: sysctl
+          resources: {}
+          securityContext:
+            privileged: true
+            runAsUser: 0
+  transport:
+    service:
+      metadata: {}
+      spec: {}
+    tls:
+      certificate: {}
+  updateStrategy:
+    changeBudget: {}
+  version: 7.16.3
+

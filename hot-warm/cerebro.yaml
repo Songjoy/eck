@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cerebro
+  namespace: swj2
   labels:
     app: cerebro
 spec:
@@ -19,4 +20,28 @@ spec:
         image: lmenezes/cerebro:0.9.4
         ports:
         - containerPort: 9000
+
+--
+kind: Service
+apiVersion: v1
+metadata:
+  name: cerebro-svc
+  namespace: swj2
+spec:
+  ports:
+    - name: tcp-cerebro
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+  selector:
+    app: cerebro
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  internalTrafficPolicy: Cluster
+status:
+  loadBalancer: {}
 

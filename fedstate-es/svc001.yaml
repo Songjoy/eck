@@ -1,0 +1,43 @@
+--集群1
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    common.k8s.elastic.co/type: elasticsearch
+    elasticsearch.k8s.elastic.co/cluster-name: mes01
+  name: mes01-es-http
+  namespace: es-test
+spec:
+  ports:
+  - name: https
+    nodePort: 30002
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+  selector:
+    common.k8s.elastic.co/type: elasticsearch
+    elasticsearch.k8s.elastic.co/cluster-name: mes01
+  sessionAffinity: None
+  type: NodePort
+
+-- 集群2
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    common.k8s.elastic.co/type: elasticsearch
+    elasticsearch.k8s.elastic.co/cluster-name: mes01
+  name: mes01-es-http
+  namespace: es-test
+spec:
+  ports:
+  - name: https
+    nodePort: 30006
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+  selector:
+    common.k8s.elastic.co/type: elasticsearch
+    elasticsearch.k8s.elastic.co/cluster-name: mes01
+  sessionAffinity: None
+  type: NodePort

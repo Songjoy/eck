@@ -1,0 +1,75 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elk-002
+spec:
+  auth: {}
+  http:
+    service:
+      metadata: {}
+      spec:
+        ports:
+          - name: https
+            nodePort: 30001
+            port: 9200
+            protocol: TCP
+            targetPort: 9200
+        type: NodePort
+    tls:
+      certificate: {}
+  image: elastic.m.daocloud.io/elasticsearch/elasticsearch:7.16.3
+  monitoring:
+    logs: {}
+    metrics: {}
+  nodeSets:
+    - config:
+        node.roles:
+          - data
+          - master
+          - ingest
+          - ml
+          - data_cold
+          - data_content
+          - data_frozen
+          - data_hot
+          - data_warm
+          - remote_cluster_client
+          - transform
+      count: 3
+      name: data
+      podTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            elasticsearch.k8s.elastic.co/node-role: data
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - '-cxe'
+                - >-
+                  ulimit -HSn 65535 && /bin/tini --
+                  /usr/local/bin/docker-entrypoint.sh eswrapper
+              name: elasticsearch
+              resources:
+                limits:
+                  cpu: '1'
+                  memory: 1Gi
+                requests:
+                  cpu: 100m
+                  memory: 214748364800m
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_RESOURCE
+          initContainers:
+            - command:
+                - sh
+                - '-c'
+                - sysctl -w vm.max_map_count=262144
+              name: sysctl
+              resources: {}
+              securityContext:
+                privileged: true
+                runAsUser: 0
+  version: 7.16.3
