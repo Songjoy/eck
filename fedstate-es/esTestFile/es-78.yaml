@@ -1,9 +1,9 @@
-# 集群1
+# elastic 8N7AIO020K9sM3utVe84q3dd
+---
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
   name: mes01
-  namespace: es-test
 spec:
   auth: {}
   http:
@@ -12,7 +12,6 @@ spec:
       spec:
         ports:
         - name: https
-          nodePort: 30002
           port: 9200
           protocol: TCP
           targetPort: 9200
@@ -30,9 +29,9 @@ spec:
       - ingest
       - ml
       discovery.seed_hosts:
-      - 10.29.16.22:30006
-      - 10.29.16.22:30002
-    count: 2
+      - 10.29.26.76:30147
+      - 10.29.26.78:31964
+    count: 1
     name: data
     podTemplate:
       metadata:
@@ -71,6 +70,9 @@ spec:
   - config:
       node.roles:
       - master
+      discovery.seed_hosts:
+      - 10.29.26.76:30147
+      - 10.29.26.78:31964
     count: 1
     name: master
     podTemplate:
@@ -117,13 +119,14 @@ spec:
     changeBudget: {}
   version: 7.16.3
 
--- 
-# 集群2
+---
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
+  annotations:
+    eck.k8s.elastic.co/orchestration-hints: '{"no_transient_settings":true,"service_accounts":false}'
+    elasticsearch.k8s.elastic.co/cluster-uuid: Jkf6pQnPRYeBBa6I8zdwyA
   name: mes01
-  namespace: es-test
 spec:
   auth: {}
   http:
@@ -132,7 +135,6 @@ spec:
       spec:
         ports:
         - name: https
-          nodePort: 30006
           port: 9200
           protocol: TCP
           targetPort: 9200
@@ -146,53 +148,20 @@ spec:
   nodeSets:
   - config:
       node.roles:
-      - data
-      - ingest
-      - ml
-      discovery.seed_hosts:
-      - 10.29.16.22:30006
-      - 10.29.16.22:30002
-    count: 1
-    name: data
-    podTemplate:
-      metadata:
-        creationTimestamp: null
-        labels:
-          elasticsearch.k8s.elastic.co/node-role: data
-      spec:
-        containers:
-        - command:
-          - /bin/sh
-          - -cxe
-          - ulimit -HSn 65535 && /bin/tini -- /usr/local/bin/docker-entrypoint.sh
-            eswrapper
-          name: elasticsearch
-          resources:
-            limits:
-              cpu: "1"
-              memory: 1Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
-          securityContext:
-            capabilities:
-              add:
-              - SYS_RESOURCE
-        initContainers:
-        - command:
-          - sh
-          - -c
-          - sysctl -w vm.max_map_count=262144
-          name: sysctl
-          resources: {}
-          securityContext:
-            privileged: true
-            runAsUser: 0
-  - config:
-      node.roles:
       - master
-    count: 2
-    name: master
+      discovery.seed_hosts:
+      - 10.29.26.76:30001
+      - 10.29.16.78:30003
+      cluster.initial_master_nodes:
+      - 10.29.26.76:30001
+      - 10.29.26.78:30003
+      network.publish_host:
+      - 10.29.26.78
+      transport.port: 30003
+      # xpack.security.enabled: false
+      # xpack.security.transport.ssl.enabled: false
+    count: 1
+    name: master-78
     podTemplate:
       metadata:
         creationTimestamp: null
@@ -236,4 +205,3 @@ spec:
   updateStrategy:
     changeBudget: {}
   version: 7.16.3
-

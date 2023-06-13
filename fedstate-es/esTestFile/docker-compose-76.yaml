@@ -1,0 +1,38 @@
+---
+version: '2.2'
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - network.publish_host=10.29.26.76
+      - "discovery.seed_hosts=10.29.16.22:9300, 10.29.16.22:9301, 10.29.26.76:9300"
+      - "cluster.initial_master_nodes=10.29.26.76:9300, 10.29.16.22:9300, 10.29.16.22:9301"
+      # - cluster.routing.allocation.awareness.attributes="zone"
+      # - cluster.routing.allocation.awareness.force.zone.values="10-29-26-76, 10-29-16-22"
+      # - node.attr.zone="10-29-26-76"
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin="*"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - elastic
+
+volumes:
+  data01:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge

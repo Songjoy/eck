@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  elastic-internal: RFhFdjRZaU4xNGZBUDY1N2NWODlSOWQy
+  elastic-internal-monitoring: ODhPTjM2cGs4aTFrNDVQYldKSzAwekRW
+  elastic-internal-pre-stop: MHEyOG5HOGxkRzdFZjVONlM1eUZkOTRM
+  elastic-internal-probe: dlYzcDUzYlhMaHVLaEZmMTM0Mno5MTVH
+kind: Secret
+metadata:
+  name: mes01-es-internal-users
+type: Opaque

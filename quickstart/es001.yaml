@@ -4,10 +4,6 @@ metadata:
   annotations:
     eck.k8s.elastic.co/orchestration-hints: '{"no_transient_settings":true,"service_accounts":false}'
     elasticsearch.k8s.elastic.co/cluster-uuid: 0i9jCXrqR5mBXDZxKUYARQ
-    input: '{"cluster":"mcamel-test","namespace":"es-test","name":"es001","describe":"ES
-      集群测试（勿删）","version":"7.16.3","service_type":1,"ports":[{}],"node_sets":[{"node_type":1,"replicas":3,"cpu_request":"0.5","cpu_limit":"1","memory_request":"1GB","memory_limit":"1GB","storage_class_name":"hwameistor-storage-lvm-hdd","storage_capacity":"1GB"},{"node_type":2,"replicas":1,"cpu_request":"0.1","cpu_limit":"1","memory_request":"0.1GB","memory_limit":"1GB"},{"node_type":3,"replicas":3,"cpu_request":"0.1","cpu_limit":"1","memory_request":"0.1GB","memory_limit":"1GB","storage_class_name":"hwameistor-storage-lvm-hdd","storage_capacity":"1GB"}],"elasticsearch_password":"YfOaRH0esnly8nGng26POw==","kibanaPorts":[{}],"kibana_service_type":1}'
-    shadow.clusterpedia.io/cluster-name: mcamel-test
-  generation: 3
   name: es001
   namespace: es-test
 spec:

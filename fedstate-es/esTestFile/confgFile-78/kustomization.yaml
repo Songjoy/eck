@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- mes01-es-data-78-es-transport-certs.yaml
+- mes01-es-http-ca-internal.yaml
+- mes01-es-http-certs-internal.yaml
+- mes01-es-http-certs-public.yaml
+- mes01-es-internal-users.yaml
+- mes01-es-master-78-es-transport-certs.yaml
+- mes01-es-remote-ca.yaml
+- mes01-es-transport-ca-internal.yaml
+- mes01-es-transport-certs-public.yaml
+- user-secret.yaml
